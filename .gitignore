@@ -1,0 +1,20 @@
+# editor
+.vs/
+.vscode/
+.idea/
+.idea_modules/
+
+# pycache binaries
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# requests database
+db.sqlite3
+
+# python venvs
+.env/
+.venv/
+env/
+venv/
