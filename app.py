@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 
-from v1 import router as v1
+from vlo import router as vlo
+from hwinfo import router as hwinfo
+from articles import router as articles
 
 app = FastAPI()
-app.include_router(v1)
+app.include_router(vlo)
+app.include_router(articles)
+app.include_router(hwinfo)
