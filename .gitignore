@@ -10,8 +10,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# requests database
-db.sqlite3
+# database
+db.*
+*.sqlite3
+*.db
 
 # python venvs
 .env/
