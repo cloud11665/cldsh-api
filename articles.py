@@ -1,11 +1,14 @@
+import html
 from datetime import datetime
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, Form, Path, Query
+from requests import get
+from sqlalchemy.orm import Session
 
 import models
 import schemas
 from database import SessionLocal, engine
-from fastapi import APIRouter, Depends, Form, Path, Query
-from sqlalchemy.orm import Session
 
 models.Base.metadata.create_all(bind=engine)
 router = APIRouter(prefix="/articles", tags=["ARTICLES"])
@@ -29,9 +32,8 @@ def GetComments(article_id:int      = Path(..., title="Article ID"),
 	'''
 	query = db.query(models.Comment) \
 	          .filter(models.Comment.parent_id == article_id) \
-	          .limit(limit) \
 	          .all()
-
+	query = list(reversed(query))[:limit]
 	return [dict(q) for q in query]
 
 
@@ -44,11 +46,18 @@ def AddComment(article_id:int = Path(..., title="Article ID"),
 	Adds a comment to an article.\n
 	Response model: `Comment`
 	'''
+	content = html.escape(content, True)
+	username = html.escape(username, True)
+
+	if get(f"https://github.com/{username}.png").ok:
+		avatar = f"https://github.com/{username}.png"
+	else:
+		avatar = ""
+
 	now = datetime.now()
 	db_comment = models.Comment(username=username, content=content,
-	                            date=now, parent_id=article_id)
+	                            date=now, parent_id=article_id, avatar=avatar)
 	db.add(db_comment)
 	db.commit()
 	db.refresh(db_comment)
-	del db_comment.__dict__["_sa_instance_state"]
 	return dict(db_comment)

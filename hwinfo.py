@@ -30,9 +30,9 @@ def Disks():
 		diskd = psu.disk_usage(disk.mountpoint)
 		out.append({
 			"name":    disk.device,
-			"unit":    "TiB",
-			"used":    round(diskd.used /(1<<40),2),
-			"total":   round(diskd.total/(1<<40),2),
+			"unit":    "GiB",
+			"used":    round(diskd.used /(1<<30),2),
+			"total":   round(diskd.total/(1<<30),2),
 			"usage":   round(diskd.percent,2),
 			"fsystem": disk.fstype
 		})

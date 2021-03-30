@@ -11,7 +11,7 @@ class Comment(Base):
 	date = Column(DateTime)
 	username = Column(UnicodeText)
 	content = Column(UnicodeText)
-
+	avatar = Column(UnicodeText)
 	parent_id = Column(Integer)
 
 	def __iter__(self):
@@ -19,4 +19,5 @@ class Comment(Base):
 		yield "date", self.date,
 		yield "username", self.username,
 		yield "content", self.content,
+		yield "avatar", self.avatar
 		yield "parent_id", self.parent_id

@@ -72,4 +72,5 @@ class Comment(BaseModel):
 	date: datetime
 	username: str
 	content: str
+	avatar: str
 	parent_id: int
