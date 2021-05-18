@@ -1,19 +1,20 @@
-FROM python:3.8
+FROM pypy:latest
 
-COPY . /app
-WORKDIR /app
+WORKDIR /usr/src/app
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
 
-ENV NUM_WORKERS=4
-ENV NUM_THREADS=2
-ENV PORT=5001
-ENV ENTRY="app:app"
+RUN apt-get -y update
+RUN apt-get -y install memcached
+RUN pypy3 -m pip install --upgrade pip
+RUN pypy3 -m pip install --no-cache-dir -r requirements.txt
 
-CMD ["gunicorn" \
-	,"--bind=0.0.0.0:${PORT}" \
-	,"--workers=${NUM_WORKERS}" \
-	,"--threads=${NUM_THREADS}" \
-	,"--worker_connections=1000" \
-	,"--worker-class=uvicorn.workers.UvicornWorker" \
-	,"${ENTRY}"]
+COPY . .
+ADD start.sh /
+RUN chmod +x /start.sh
+
+EXPOSE 7001
+
+ENV PYTHONHASHSEED 0
+
+CMD ["/start.sh"]
