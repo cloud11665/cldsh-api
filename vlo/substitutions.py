@@ -5,9 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from .lut import LUT
+import rapidjson
 import schemas
 
-def GetSubstitutions(klass:str, offset:int):
+def GetSubstitutions(klass:str, offset:int, json_=False):
 	date_today = datetime.datetime.today() + datetime.timedelta(days=offset)
 
 	resp = requests.post(
@@ -46,10 +47,16 @@ def GetSubstitutions(klass:str, offset:int):
 			span_info = span_info.text
 
 			rm_list.append(schemas.Substitution(time_signature=span_idx,
-	                                comment=span_info))
+	                                        comment=span_info))
 
 		classes[cls_name] = rm_list
 
 	if klass:
-		return classes.get(klass, [])
-	return classes
+		out = classes.get(klass, [])
+	else:
+		out = classes
+
+	if json_:
+		return rapidjson.dumps(out)
+
+	return out
