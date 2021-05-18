@@ -2,23 +2,22 @@ import datetime
 import random
 import itertools
 from typing import List
-import json
-import os
-
 import requests
+import rapidjson
+import json
 
 import utils.colors as colors
-import schemas
 from .lut import LUT
-from utils.cache import TimedLRUcache
+from dbclient import client
 
-@TimedLRUcache(m=30)
-def GetTimetableData(_klass:str, offset:int=0,
-	                   highlight:bool=False,
-	                   defaultColor:str="#d0ffd0",
-	                   overrideColor:str=None):
+@client.Func(30*60)
+def GetTimetableData(_klass:str, offset=0,
+	                   highlight=False,
+	                   defaultColor="#d0ffd0",
+	                   overrideColor=None,
+	                   json_=False):
 	today = datetime.date.today()
-	now = datetime.datetime.now() + datetime.timedelta(hours=3)
+	now = datetime.datetime.now()
 
 	last_monday = today + datetime.timedelta(days=-today.weekday())
 	next_friday = last_monday + datetime.timedelta(days=4)
@@ -42,7 +41,7 @@ def GetTimetableData(_klass:str, offset:int=0,
 					"year": 2020,
 					"datefrom": last_monday.strftime("%Y-%m-%d"),
 					"dateto": next_friday.strftime("%Y-%m-%d"),
-					"id": LUT["VLO"]["CLASS"]["IDR"][_klass.upper()],
+					"id": LUT["VLO"]["CLASS"]["IDR"][_klass],
 					"showColors": True,
 					"showIgroupsInClasses": True,
 					"showOrig": True,
@@ -125,9 +124,12 @@ def GetTimetableData(_klass:str, offset:int=0,
 		for x, y in itertools.groupby(day, lambda x: x["time_index"]):
 				buff[i].append(list(y))
 
+	if json_:
+		return rapidjson.dumps(buff, ensure_ascii=False)
+
 	return buff
 
-def GetNextLesson(klass:str, groups:List[str], style:schemas.NextStyle, notext:str=""):
+def GetNextLesson(klass:str, groups:List[str], style:str, notext:str=""):
 	now = datetime.datetime.now()
 
 	if now.weekday() < 5:
@@ -155,20 +157,81 @@ def GetNextLesson(klass:str, groups:List[str], style:schemas.NextStyle, notext:s
 						index["delta"] = delta
 						filtered.append(index)
 
-		lowest = sorted(filtered, key=lambda x: x["delta"])
+		lowest = sorted(filtered, key=lambda x:x["delta"])
 
 		if not lowest:
 			return notext
 
-		if style.value == schemas.NextStyle.Default.value:
-			return f"{lowest[0]['subject_short']}"
+		lowest = lowest[0]
+		style = int(style, 16)
+		subject_verbose =    (style&0x800)>>11
+		time_enabled =       (style&0x400)>>10
+		time_unit =          (style&0x200)>>9
+		time_display_unit =  (style&0x100)>>8
+		time_separator =     [" ", ":", ".", "/"][((style&0xc0)>>6) % 4]
+		time_bracket_begin = ["<", "{", "[", "(", ""][((style&0x38)>>3) % 5]
+		time_bracket_end =   [">", "}", "]", ")", ""][((style&0x07)>>0) % 5]
 
-		if style.value == schemas.NextStyle.Detailed.value:
-			return f"{lowest[0]['subject']}"
+		out = lowest["subject_short"] if subject_verbose else lowest["subject"]
 
-		if style.value == schemas.NextStyle.Timed.value:
-			minutes, _ = divmod(lowest[0]["delta"].seconds, 60)
-			hours, minutes = divmod(minutes, 60)
-			return f"{lowest[0]['subject']} [{hours}:{minutes}]"
+		if time_enabled:
+			time = time_bracket_begin
 
+			minutes, _ = divmod(lowest["delta"].seconds, 60)
+
+			if not time_unit:
+				hours, minutes = divmod(minutes, 60)
+				time += str(hours)
+				time += time_separator
+
+			time += str(minutes).rjust(2, "0")
+
+			if time_display_unit and time_unit:
+				time += "min"
+			elif time_display_unit and not time_unit:
+				time += "h"
+
+			time += time_bracket_end
+
+			out += " "
+			out += time
+
+		return out
+
+		'''
+		- subject_verbose (0-1)
+		- time_enabled (0-1)
+		- time_unit [minutes/hours] (0-1)
+		- time_display_unit (0-1)
+		- time_separator [" ", ":", ".", "/"] (00-11)
+		- time_bracket_begin ["<", "{", "[", "(", ""] (000-111)
+		- time_bracket_end   [">", "}", "]", ")", ""] (000-111)
+
+		0 0 0 0 00 000 000
+		- short
+		- no time
+		- N/A
+		- N/A
+		- N/A
+		- N/A
+		- N/A
+		- N/A
+		'''
 	return notext
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
