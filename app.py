@@ -28,7 +28,7 @@ if __name__ == "__main__":
 	pid = None
 	while pid is None:
 		__import__("os").system("2>/dev/null 1>&2 memcached &")
-		pid = __import__("subprocess").check_output("ps -i 'cmd,pid' | grep '^memcached' | awk '{print $2}'", shell=True)\
+		pid = __import__("subprocess").check_output("ps -o 'cmd,pid' | grep '^memcached' | awk '{print $2}'", shell=True)\
 					.decode()\
 					.strip()
 		pid = int(pid) if pid.isdigit() else None
