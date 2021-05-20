@@ -16,8 +16,6 @@ def GetTimetableData(_klass:str, offset=0,
 	                   defaultColor="#d0ffd0",
 	                   overrideColor=None,
 	                   json_=False):
-	print("begin method", __import__("datetime").datetime.now())
-
 	today = datetime.date.today()
 	now = datetime.datetime.now()
 
@@ -125,8 +123,6 @@ def GetTimetableData(_klass:str, offset=0,
 	for i, day in enumerate(days):
 		for x, y in itertools.groupby(day, lambda x: x["time_index"]):
 				buff[i].append(list(y))
-
-	print("end method", __import__("datetime").datetime.now())
 
 	if json_:
 		return rapidjson.dumps(buff, ensure_ascii=False)
