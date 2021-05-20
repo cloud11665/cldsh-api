@@ -82,19 +82,19 @@ async def Substitutions(class_id:schemas.ClassID=Path(..., description="The ID o
 	return JsonStrResponse(GetSubstitutions(
 		class_id.value, offset, True))
 
-@router.put("/updateLUT")
-async def UpdateLUT():
-	'''
-	Updates the local look up table used for IDs.\n
-	Response model: `str`
-	'''
-	global LUT
-	_LUT = deepcopy(LUT)
-	try:
-		FetchLUT()
-	except Exception as e:
-		LUT = _LUT
-		return format_exc()
-
-	return "LUT update successfull!"
+#@router.put("/updateLUT")
+#async def UpdateLUT():
+#	'''
+#	Updates the local look up table used for IDs.\n
+#	Response model: `str`
+#	'''
+#	global LUT
+#	_LUT = deepcopy(LUT)
+#	try:
+#		FetchLUT()
+#	except Exception as e:
+#		LUT = _LUT
+#		return format_exc()
+#
+#	return "LUT update successfull!"
 
