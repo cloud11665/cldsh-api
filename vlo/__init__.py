@@ -44,7 +44,6 @@ async def TimetableData(class_id:schemas.ClassID= Path(..., description="The ID 
 	Response model: `List[List[List[Lesson]]]`\n
 	Cache timeout - 30m
 	'''
-	print("begin request", __import__("datetime").datetime.now())
 	return JsonStrResponse(GetTimetableData(
 		class_id.value, offset, highlight, defaultColor, overrideColor, True
 		))
