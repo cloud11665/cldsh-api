@@ -163,7 +163,7 @@ def GetNextLesson(klass:str, groups:List[str], style:str, notext:str=""):
 			return notext
 
 		lowest = lowest[0]
-		style = int(style, 16)
+		style = int(style, 2)
 		subject_verbose =    (style&0x800)>>11
 		time_enabled =       (style&0x400)>>10
 		time_unit =          (style&0x200)>>9

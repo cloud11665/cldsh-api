@@ -1,7 +1,7 @@
 from copy import deepcopy
 from pathlib import Path
 from traceback import format_exc
-from typing import Optional
+from typing import Optional, List
 
 import rapidjson
 import schemas
@@ -33,7 +33,7 @@ async def Timestamps():
 	values = LUT["VLO"]["TIME"]["DATA"]
 	return rapidjson.dumps(values, ensure_ascii=False)
 
-@router.get("/ttdata/{class_id}")
+@router.get("/ttdata/{class_id}", response_model=List[List[List[schemas.Lesson]]])
 async def TimetableData(class_id:schemas.ClassID= Path(..., description="The ID of class."),
 	                  offset:Optional[int]  = Query(0, ge=-5, le=5, description="Positive time offset in weeks."),
 	               highlight:Optional[bool] = Query(False, description="Reduce the color saturation of every lesson, other than the current."),
@@ -51,7 +51,7 @@ async def TimetableData(class_id:schemas.ClassID= Path(..., description="The ID 
 @router.get("/next/{class_id}")
 async def NextLesson(class_id:schemas.ClassID=Path(..., description="The ID of class."),
                groups:str=Query(..., description="Comma separated names of selected groups."),
-               style:Optional[str]=Query("0", description="Hex encoded style bitmask"),
+               style:Optional[str]=Query("0", description="Style bitmask"),
                notext:Optional[str]=Query("", description="Text to be displayed, when there are no lessons remaining for the day.")):
 	'''
 	Returns the next lesson (if there is any) and the ammount of time remaining until it starts.\n
