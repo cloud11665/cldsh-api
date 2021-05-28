@@ -1,4 +1,6 @@
 import datetime
+from functools import cmp_to_key
+from pprint import pformat, pprint
 import random
 import itertools
 from typing import List
@@ -114,9 +116,13 @@ def GetTimetableData(_klass:str, offset=0,
 			"day_index": day_idx   #int
 		}
 
+	data = sorted(data, key=lambda x: x["day_index"])
 	days = []
+
 	for _,y in itertools.groupby(data, lambda x: x["day_index"]):
 		days.append(list(y))
+
+	pprint(data)
 
 	buff = [[],[],[],[],[]]
 
