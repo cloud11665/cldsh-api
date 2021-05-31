@@ -1,4 +1,5 @@
 import datetime
+from pprint import pprint
 import random
 
 import requests
@@ -30,6 +31,8 @@ def GetSubstitutions(klass:str, offset:int, json_=False):
 		},
 	)
 
+	#print(resp.json()["r"], file=open("a.html","w",encoding="utf-8"))
+
 	classes = {}
 	soup = BeautifulSoup(resp.json()["r"], features="lxml")
 
@@ -37,7 +40,7 @@ def GetSubstitutions(klass:str, offset:int, json_=False):
 		cls_name = clsa.find("span", class_="print-font-resizable").text
 		rm_list = []
 
-		for removed in clsa.find_all("div", class_="row remove"):
+		for removed in clsa.find_all("div", class_="row"):
 			div_idx = removed.find("div", class_="period")
 			span_idx = div_idx.find("span", class_="print-font-resizable")
 			span_idx = span_idx.text
@@ -46,8 +49,9 @@ def GetSubstitutions(klass:str, offset:int, json_=False):
 			span_info = div_info.find("span", class_="print-font-resizable")
 			span_info = span_info.text
 
-			rm_list.append(schemas.Substitution(time_signature=span_idx,
-	                                        comment=span_info))
+			rm_list.append({
+				"time_signature":span_idx, "comment":span_info
+			})
 
 		classes[cls_name] = rm_list
 
